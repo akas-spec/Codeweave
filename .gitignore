@@ -1,0 +1,70 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Node.js / Next.js
+node_modules/
+.pnp
+.pnp.js
+coverage/
+.next/
+out/
+build/
+.DS_Store
+*.pem
+
+# IDEs and Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.settings/
+
+# Docker
+docker-compose.override.yml
+.docker-volumes/
+
+# Logs and databases
+*.log
+*.sqlite
+*.sqlite3
+
+# Project specific
+repos/
+.pytest_cache/
+
+# Environment variables / secrets
+.env
+.env.local
+.env.*.local

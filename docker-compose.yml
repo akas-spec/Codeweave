@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_USER: codeweave
+      POSTGRES_PASSWORD: codeweave
+      POSTGRES_DB: codeweave
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - codeweave-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U codeweave -d codeweave"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - codeweave-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+networks:
+  codeweave-net:
+    driver: bridge
+
+volumes:
+  postgres_data:
