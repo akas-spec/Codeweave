@@ -1,13 +1,13 @@
-# CodeWeave — AI-Powered Autonomous Code Engineering Platform
+# CodeWeave
 
-![Python](https://img.shields.io/badge/Python-3.11-blue.svg)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.115-green.svg)
-![Next.js](https://img.shields.io/badge/Next.js-14-black.svg)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-blue.svg)
-![Redis](https://img.shields.io/badge/Redis-7-red.svg)
+An AI-powered autonomous code engineering platform that semantically indexes GitHub repositories and provides an interactive LLM chat interface for codebase navigation and automated debugging.
 
-CodeWeave is an AI-powered code engineering platform that enables autonomous code reasoning, multi-repo analysis, and sophisticated embedding-based code navigation.
+## Features
+
+- **Semantic Code Search:** Intelligently chunks and indexes your codebase using Python AST parsing and SentenceTransformers.
+- **Interactive Chat Interface:** Real-time streaming chat powered by OpenRouter LLMs, allowing you to ask architectural and debugging questions about your code.
+- **Autonomous Agent:** ReAct-based background agent orchestration that can autonomously navigate repositories, diagnose issues, and propose fixes.
+- **GitHub Integration:** Seamless GitHub OAuth login and 1-click repository cloning and indexing.
 
 ## Architecture
 
@@ -19,24 +19,51 @@ CodeWeave is an AI-powered code engineering platform that enables autonomous cod
 
 ## Quick Start
 
-1. Clone the repository
-2. Set up environment variables:
-   ```bash
-   cp .env.example .env
-   # Edit .env with your credentials
-   ```
-3. Start the infrastructure (Database, Redis):
-   ```bash
-   docker-compose up -d
-   ```
-4. Start backend (requires Python 3.11+):
-   ```bash
-   cd backend
-   python -m venv venv
-   source venv/bin/activate  # or venv\Scripts\activate on Windows
-   pip install -r requirements.txt
-   uvicorn app.main:app --reload
-   ```
+### Prerequisites
+- Docker & Docker Compose
+- Python 3.11+
+- Node.js 18+
+
+### 1. Clone the repository
+```bash
+# Note: Replace the URL with your actual GitHub repository URL
+git clone https://github.com/YOUR_USERNAME/CodeWeave.git
+cd CodeWeave
+```
+
+### 2. Set up environment variables
+```bash
+cp .env.example .env
+# Open .env and add your OpenRouter API key and GitHub OAuth credentials
+```
+
+### 3. Start the infrastructure (Database, Redis)
+```bash
+docker-compose up -d
+```
+
+### 4. Start the Backend API
+```bash
+cd backend
+python -m venv venv
+# On Windows:
+venv\Scripts\activate
+# On Mac/Linux:
+# source venv/bin/activate
+
+pip install -r requirements.txt
+uvicorn app.main:app --reload
+```
+
+### 5. Start the Frontend
+Open a new terminal window:
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+*The application will now be available at http://localhost:3000 and the backend API at http://localhost:8000.*
 
 ## License
 
