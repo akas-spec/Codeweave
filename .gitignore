@@ -68,3 +68,10 @@ repos/
 .env
 .env.local
 .env.*.local
+
+# Windows thumbnail cache
+Thumbs.db
+
+# In case you ever mount PostgreSQL database data locally
+db_data/
+pgdata/
