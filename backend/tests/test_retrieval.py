@@ -148,6 +148,15 @@ class TestBuildContext:
 # Search method tests (mocked DB)
 # ---------------------------------------------------------------------------
 
+@pytest.fixture
+def mock_embedding_service():
+    """Mock EmbeddingService to prevent loading actual models during tests."""
+    with patch("app.services.retrieval.EmbeddingService.get_instance") as mock:
+        mock_instance = MagicMock()
+        mock_instance.aencode = AsyncMock(return_value=[0.1] * 384)
+        mock.return_value = mock_instance
+        yield mock
+
 class TestRetrievalSearch:
     """Tests for the search method using mocked database sessions."""
 

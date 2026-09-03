@@ -182,7 +182,7 @@ class IngestionService:
     def _chunk_code_file(self, file_path: Path, relative_path: str, ext: str) -> list[Chunk]:
         """Chunk a code file. Use AST parsing for Python, regex for others."""
         try:
-            content = file_path.read_text(encoding="utf-8", errors="ignore")
+            content = file_path.read_text(encoding="utf-8", errors="ignore").replace("\x00", "")
         except Exception:
             return []
 
@@ -317,7 +317,7 @@ class IngestionService:
     def _chunk_markdown_file(self, file_path: Path, relative_path: str) -> list[Chunk]:
         """Chunk markdown files by heading sections."""
         try:
-            content = file_path.read_text(encoding="utf-8", errors="ignore")
+            content = file_path.read_text(encoding="utf-8", errors="ignore").replace("\x00", "")
         except Exception:
             return []
 
@@ -363,6 +363,7 @@ class IngestionService:
             text = ""
             for page in doc:
                 text += page.get_text() + "\n"
+            text = text.replace("\x00", "")
             doc.close()
         except ImportError:
             logger.warning("PyMuPDF not installed. Skipping PDF: %s", relative_path)
@@ -379,7 +380,7 @@ class IngestionService:
     def _chunk_text_file(self, file_path: Path, relative_path: str, chunk_type: str = "text") -> list[Chunk]:
         """Chunk a plain text or config file."""
         try:
-            content = file_path.read_text(encoding="utf-8", errors="ignore")
+            content = file_path.read_text(encoding="utf-8", errors="ignore").replace("\x00", "")
         except Exception:
             return []
 

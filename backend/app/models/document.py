@@ -8,7 +8,7 @@ from app.config import settings
 class Document(Base):
     __tablename__ = "documents"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True)
     source = Column(String(1024), nullable=False)  # File path within repo
     content = Column(Text, nullable=False)  # The actual chunk text
     chunk_index = Column(Integer, default=0)  # Order within the file

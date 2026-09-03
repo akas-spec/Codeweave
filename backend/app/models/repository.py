@@ -15,7 +15,7 @@ class IngestionStatus(str, enum.Enum):
 class Repository(Base):
     __tablename__ = "repositories"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True)
     name = Column(String(255), nullable=False)
     full_name = Column(String(512), nullable=False, unique=True)  # e.g. "owner/repo"
     github_url = Column(String(1024), nullable=False)
