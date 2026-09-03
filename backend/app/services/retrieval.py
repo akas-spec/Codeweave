@@ -50,27 +50,39 @@ class RetrievalService:
         top_k: int = DEFAULT_TOP_K,
     ) -> list[RetrievedChunk]:
         """Return the top_k most relevant chunks for query in repository."""
+        import asyncio
         top_k = min(top_k, MAX_TOP_K)
 
-        # 1. Get query embedding (check cache first)
-        query_embedding = await self._get_query_embedding(query)
+        async def do_vector_search():
+            query_embedding = await self._get_query_embedding(query)
+            chunks = await self._vector_search(query_embedding, repository_id, top_k)
+            return [c for c in chunks if c.score >= MIN_SCORE_THRESHOLD]
 
-        # 2. Vector similarity search
-        chunks = await self._vector_search(query_embedding, repository_id, top_k)
+        # Run vector and keyword searches concurrently
+        vector_chunks, keyword_chunks = await asyncio.gather(
+            do_vector_search(),
+            self._keyword_search(query, repository_id, top_k)
+        )
 
-        # 3. Filter below threshold
-        chunks = [c for c in chunks if c.score >= MIN_SCORE_THRESHOLD]
+        # Merge and deduplicate by document_id
+        merged = {}
+        for c in keyword_chunks:
+            merged[c.document_id] = c
+            
+        for c in vector_chunks:
+            if c.document_id in merged:
+                merged[c.document_id].score = max(merged[c.document_id].score, c.score)
+            else:
+                merged[c.document_id] = c
 
-        # 4. Keyword fallback if no vector results
-        if not chunks:
-            logger.info("Vector search returned 0 results — falling back to keyword search")
-            chunks = await self._keyword_search(query, repository_id, top_k)
+        # Sort by score descending and take top_k
+        final_chunks = sorted(merged.values(), key=lambda x: x.score, reverse=True)[:top_k]
 
         logger.info(
             "Retrieved %d chunks for repo %d (query len=%d chars)",
-            len(chunks), repository_id, len(query),
+            len(final_chunks), repository_id, len(query),
         )
-        return chunks
+        return final_chunks
 
     async def _get_query_embedding(self, query: str) -> list[float]:
         """Return embedding, using cache if available."""
@@ -135,15 +147,14 @@ class RetrievalService:
         top_k: int,
     ) -> list[RetrievedChunk]:
         """Fallback full-text keyword search using SQL ILIKE."""
-        # Extract meaningful keywords (skip short words)
-        keywords = [w for w in query.split() if len(w) > 3]
+        # Extract meaningful keywords (skip very short words)
+        keywords = [w for w in query.split() if len(w) >= 3][:3]
         if not keywords:
             return []
 
-        # Build ILIKE conditions for first 3 keywords
-        conditions = " OR ".join(
-            f"content ILIKE '%{kw}%'" for kw in keywords[:3]
-        )
+        # Build parameterized ILIKE conditions
+        conditions = " OR ".join(f"content ILIKE :kw{i}" for i in range(len(keywords)))
+        
         sql = text(f"""
             SELECT id, content, source, chunk_type, language
             FROM documents
@@ -152,7 +163,11 @@ class RetrievalService:
             LIMIT :top_k
         """)
 
-        result = await self._db.execute(sql, {"repo_id": repository_id, "top_k": top_k})
+        params = {"repo_id": repository_id, "top_k": top_k}
+        for i, kw in enumerate(keywords):
+            params[f"kw{i}"] = f"%{kw}%"
+
+        result = await self._db.execute(sql, params)
         rows = result.fetchall()
 
         return [
@@ -162,7 +177,7 @@ class RetrievalService:
                 source=row.source,
                 chunk_type=row.chunk_type or "text",
                 language=row.language,
-                score=0.1,   # Low score — keyword match only
+                score=0.6,   # Keyword match score (high enough to surface)
             )
             for row in rows
         ]
